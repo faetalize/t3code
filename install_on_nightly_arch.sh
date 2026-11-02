@@ -33,9 +33,15 @@ read -r _ pkgver < <(pacman -Q "$PACKAGE")
 version=${pkgver%-*}
 version=${version/_nightly./-nightly.}
 
+# Only the small record of what's installed outlives a run. This also sweeps up after a killed run.
 mkdir -p "$CACHE"
+find "$CACHE" -mindepth 1 -maxdepth 1 ! -name installed -exec rm -rf {} +
 work=$(mktemp -d "$CACHE/build.XXXXXX")
 trap 'rm -rf "$work"' EXIT
+# A throwaway home catches everything the tools cache or download, so it all goes with the build.
+export HOME="$work/home"
+mkdir "$HOME"
+unset XDG_CACHE_HOME XDG_CONFIG_HOME XDG_DATA_HOME XDG_STATE_HOME
 
 say "Downloading the panels patch"
 curl -fsSL "$PATCH_URL" -o "$work/panels.diff"
@@ -67,21 +73,15 @@ case $(uname -m) in
   aarch64) node_arch=arm64 ;;
   *) die "unsupported architecture $(uname -m)." ;;
 esac
-node_dir="$CACHE/node-v$node_version-linux-$node_arch"
-if [[ ! -x $node_dir/bin/node ]]; then
-  say "Downloading Node $node_version"
-  node_tar="node-v$node_version-linux-$node_arch.tar.xz"
-  curl -fsSL "https://nodejs.org/dist/v$node_version/$node_tar" -o "$work/$node_tar"
-  curl -fsSL "https://nodejs.org/dist/v$node_version/SHASUMS256.txt" -o "$work/SHASUMS256.txt"
-  (cd "$work" && grep " $node_tar\$" SHASUMS256.txt | sha256sum -c --quiet -)
-  tar -xJf "$work/$node_tar" -C "$CACHE"
-fi
-tools="$CACHE/tools-pnpm-$pnpm_version"
-export PATH="$tools/node_modules/.bin:$node_dir/bin:$PATH"
-if [[ ! -x $tools/node_modules/.bin/pnpm ]]; then
-  say "Downloading pnpm $pnpm_version"
-  npm install --silent --no-audit --no-fund --prefix "$tools" "pnpm@$pnpm_version" @electron/asar@4
-fi
+say "Downloading Node $node_version and pnpm $pnpm_version"
+node_tar="node-v$node_version-linux-$node_arch.tar.xz"
+curl -fsSL "https://nodejs.org/dist/v$node_version/$node_tar" -o "$work/$node_tar"
+curl -fsSL "https://nodejs.org/dist/v$node_version/SHASUMS256.txt" -o "$work/SHASUMS256.txt"
+(cd "$work" && grep " $node_tar\$" SHASUMS256.txt | sha256sum -c --quiet -)
+tar -xJf "$work/$node_tar" -C "$work"
+tools="$work/tools"
+export PATH="$tools/node_modules/.bin:$work/${node_tar%.tar.xz}/bin:$PATH"
+npm install --silent --no-audit --no-fund --prefix "$tools" "pnpm@$pnpm_version" @electron/asar@4
 
 say "Unpacking your nightly"
 asar extract "$ASAR" "$work/app"

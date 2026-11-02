@@ -61,7 +61,7 @@ export const SidebarChromeHeader = memo(function SidebarChromeHeader({
   return (
     <div
       className={cn(
-        "relative flex h-[var(--workspace-topbar-height)] shrink-0 flex-row items-center gap-2 pr-3 group-data-[side=right]:pr-12",
+        "relative flex h-[var(--workspace-topbar-height)] shrink-0 flex-row items-center gap-2 pr-3 group-data-[side=right]:pr-(--workspace-titlebar-toggle-end)",
         isElectron && "drag-region",
       )}
     >
@@ -121,7 +121,7 @@ export function SidebarBrandWidthProbe({
       aria-hidden="true"
       className={cn(
         "pointer-events-none invisible fixed top-0 left-0 flex w-max border-r border-transparent",
-        side === "right" ? "pr-12" : "pr-3",
+        side === "right" ? "pr-(--workspace-titlebar-toggle-end)" : "pr-3",
       )}
       ref={observeWidth}
     >

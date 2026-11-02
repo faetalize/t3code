@@ -33,13 +33,12 @@ import type { DockGroupView, DockView } from "./dockView";
 import { useDockView } from "./useDockView";
 
 const CHAT_MIN_SIZE = 320;
-const TITLEBAR_CONTROLS_INSET =
-  "calc(3.5rem + var(--workspace-titlebar-content-right) - var(--workspace-controls-right))";
+// Follows the controls themselves, which also move in for the desktop app's window buttons.
+const TITLEBAR_CONTROLS_INSET = "calc(var(--workspace-titlebar-content-right) + 2.75rem)";
 const SASH_KEY_STEP = 16;
 // With the threads sidebar closed its toggle is left in this corner, so the controls move in.
 const SIDEBAR_TOGGLE_CLEARANCE_STYLE = {
-  "--workspace-titlebar-content-right":
-    "calc(var(--workspace-controls-right) + var(--workspace-titlebar-control-size) + 0.25rem)",
+  "--workspace-titlebar-content-right": "var(--workspace-titlebar-toggle-end)",
 } as CSSProperties;
 
 interface DockContext {

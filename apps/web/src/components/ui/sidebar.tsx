@@ -227,6 +227,8 @@ function SidebarProvider({
             "--workspace-titlebar-content-left":
               "calc(var(--workspace-controls-left) + var(--workspace-titlebar-control-size) + var(--workspace-titlebar-control-gap))",
             "--workspace-titlebar-content-right": "var(--workspace-controls-right)",
+            "--workspace-titlebar-toggle-end":
+              "calc(var(--workspace-controls-right) + var(--workspace-titlebar-control-size) + 0.25rem)",
             ...style,
           } as React.CSSProperties
         }
